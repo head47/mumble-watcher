@@ -1,0 +1,10 @@
+[Unit]
+After=docker.service
+
+[Service]
+ExecStart=/opt/discord-watcher/.venv/bin/python /opt/discord-watcher/main.py
+Type=exec
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

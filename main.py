@@ -49,6 +49,8 @@ class DiscordClient(discord.Client):
                     f"[{member.guild.name}] <b>{member.display_name}</b> покинули 🔈{before.channel.name}"
                 )
                 message = f"[{member.guild.name}] {member.display_name} покинули 🔈{before.channel.name}"
+            elif before.channel.id == after.channel.id:
+                return
             else:
                 formatted_message = f"<b>{member.display_name}</b> перешли из {member.guild.name}:🔈{before.channel.name} в {member.guild.name}:🔈{after.channel.name}"
                 message = f"{member.display_name} перешли из {member.guild.name}:🔈{before.channel.name} в {member.guild.name}:🔈{after.channel.name}"

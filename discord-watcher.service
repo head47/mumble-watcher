@@ -5,6 +5,7 @@ After=docker.service
 ExecStart=/opt/discord-watcher/.venv/bin/python /opt/discord-watcher/main.py
 Type=exec
 Restart=always
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target

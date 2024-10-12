@@ -2,7 +2,7 @@
 After=docker.service
 
 [Service]
-ExecStart=/opt/discord-watcher/.venv/bin/python /opt/discord-watcher/main.py
+ExecStart=/opt/mumble-watcher/.venv/bin/python /opt/mumble-watcher/main.py
 Type=exec
 Restart=always
 RestartSec=5s

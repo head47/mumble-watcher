@@ -1,18 +1,17 @@
-# discord-watcher
+# mumble-watcher
 
-Bot that watches a Discord voice channel and notifies a Telegram group when someone joins/leaves
+Bot that watches a Mumble voice channel and notifies a Telegram group when someone joins/leaves
 
 ## Prerequisites
 
 * `pacman -S libolm`
+* `slice2py /usr/share/mumble-server/MumbleServer.ice` to generate Python ZeroC Ice bindings
 * `pip -r requirements.txt`
 
 ## Configuring
 
-* Run `login.py` once to generate credentials file
-* Add `"discord_token": "YOUR_TOKEN_HERE"` to `credentials.json`
 * Invite the bot account to the room (you have to accept the invite manually)
-* Set room ID in `common.py`
+* Run `matrix_login.py` once to generate config file
 
 ## Running
 

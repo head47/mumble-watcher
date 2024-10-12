@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
 
-CREDS_FILE = (Path(os.path.dirname(os.path.realpath(__file__))) / "credentials.json").resolve()
-HOMESERVER = "https://matrix.altau.su"
-USER_ID = "@discordwatcherbot:altau.su"
-DEVICE_NAME = "lego"
-ROOM_ID = "!UHGnnNBOaHpZbAPrbe:altau.su"
+CONFIG_FILE = (Path(os.path.dirname(os.path.realpath(__file__))) / "config.json").resolve()
+CERT_FILE = (Path(os.path.dirname(os.path.realpath(__file__))) / "cert.pem").resolve()
+KEY_FILE = (Path(os.path.dirname(os.path.realpath(__file__))) / "key.pem").resolve()

@@ -4,12 +4,15 @@ import asyncio
 import json
 import logging
 import signal
+import time
 
-import aiofiles
-import discord
+import Ice
 import nio
 
-from common import CREDS_FILE, ROOM_ID
+import MumbleServer
+from callbacks import MetaCallback, ServerCallback
+from common import CONFIG_FILE
+from message_sender import MessageSender
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,62 +32,42 @@ def get_matrix_client(creds: dict[str, str]) -> nio.AsyncClient:
     return client
 
 
-class DiscordClient(discord.Client):
-    matrix_client: nio.AsyncClient
-
-    async def on_voice_state_update(
-        self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState
-    ):
-        if before.channel is None:
-            if after.channel is None:
-                return
-            else:
-                formatted_message = (
-                    f"[{member.guild.name}] <b>{member.display_name}</b> присоединились к 🔈{after.channel.name}"
-                )
-                message = f"[{member.guild.name}] {member.display_name} присоединились к 🔈{after.channel.name}"
-        else:
-            if after.channel is None:
-                formatted_message = (
-                    f"[{member.guild.name}] <b>{member.display_name}</b> покинули 🔈{before.channel.name}"
-                )
-                message = f"[{member.guild.name}] {member.display_name} покинули 🔈{before.channel.name}"
-            elif before.channel.id == after.channel.id:
-                return
-            else:
-                formatted_message = f"<b>{member.display_name}</b> перешли из {member.guild.name}:🔈{before.channel.name} в {member.guild.name}:🔈{after.channel.name}"
-                message = f"{member.display_name} перешли из {member.guild.name}:🔈{before.channel.name} в {member.guild.name}:🔈{after.channel.name}"
-        await self.matrix_client.room_send(
-            room_id=ROOM_ID,
-            message_type="m.room.message",
-            content={
-                "msgtype": "m.text",
-                "format": "org.matrix.custom.html",
-                "formatted_body": formatted_message,
-                "body": message,
-            },
-        )
-
-
 async def main():
     signal.signal(signal.SIGTERM, stop_gracefully)
-    async with aiofiles.open(CREDS_FILE) as f:
-        contents = await f.read()
-    creds = json.loads(contents)
-    matrix_client = get_matrix_client(creds)
+    with open(CONFIG_FILE) as f:
+        config = json.load(f)
+    matrix_client = get_matrix_client(config["matrix"])
 
-    intents = discord.Intents.default()
-    intents.voice_states = True
-    discord_client = DiscordClient(intents=intents)
-    discord_client.matrix_client = matrix_client
-    async with asyncio.TaskGroup() as tg:
-        task = tg.create_task(discord_client.start(creds["discord_token"]))
+    with Ice.initialize() as communicator:
+        ctx = {"secret": config["mumble"]["ice_secret"]}
+        proxy = communicator.stringToProxy("Meta:tcp -h 127.0.0.1 -p 6502").ice_context(ctx)
+        meta = MumbleServer.MetaPrx.checkedCast(proxy)
+        server = meta.getAllServers()[0].ice_context(ctx)
+        adapter = communicator.createObjectAdapterWithEndpoints("Callback.Client", "tcp -h 127.0.0.1")
+        adapter.activate()
+
+        room_id = config["matrix"]["room_id"]
+        sender = MessageSender(matrix_client, room_id)
+
+        server_callback = ServerCallback(ctx, server, sender)
+        server_callback_prx = MumbleServer.ServerCallbackPrx.checkedCast(adapter.addWithUUID(server_callback))
+        users = server.getUsers()
+        for _, u in users.items():
+            server_callback.session_channel_map[u.session] = u.channel
+        server.addCallback(server_callback_prx)
+
+        meta_callback = MumbleServer.MetaCallbackPrx.checkedCast(
+            adapter.addWithUUID(MetaCallback(ctx, adapter, server, sender))
+        )
+        meta.addCallback(meta_callback)
+
         while True:
             if stopping:
-                await matrix_client.close()
+                matrix_client.close()
                 raise SystemExit
             else:
-                await asyncio.sleep(3)
+                time.sleep(3)
+                await sender.check_for_messages()
 
 
 if __name__ == "__main__":

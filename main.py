@@ -63,7 +63,7 @@ async def main():
 
         while True:
             if stopping:
-                matrix_client.close()
+                await matrix_client.close()
                 raise SystemExit
             else:
                 time.sleep(3)

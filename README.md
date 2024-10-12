@@ -1,6 +1,6 @@
 # mumble-watcher
 
-Bot that watches a Mumble voice channel and notifies a Telegram group when someone joins/leaves
+Bot that watches a Mumble server and notifies a Telegram group when someone joins/leaves
 
 ## Prerequisites
 

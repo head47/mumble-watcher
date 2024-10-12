@@ -21,6 +21,8 @@ Bot that watches a Mumble server and notifies a Telegram group when someone join
 }
 ```
 
+(ice_secret should be equal to your write secret set in `mumble_server.ini`)
+
 ## Running
 
 * `main.py` -- run bot

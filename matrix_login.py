@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import asyncio
 import getpass
 import json
 import os
@@ -41,11 +40,7 @@ async def main() -> None:
         cfg["matrix"]["room_id"] = room_id
 
         with open(CONFIG_FILE, "w") as f:
-            json.dump(cfg, f)
+            json.dump(cfg, f, indent=2)
         print(f"Logged in as {resp.user_id}. Credentials saved to {CONFIG_FILE}")
     else:
         raise Exception(f"Failed to log in: {resp}")
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

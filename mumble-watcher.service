@@ -1,5 +1,6 @@
 [Unit]
-After=docker.service
+After=docker.service mumble-server.service
+BindsTo=docker.service mumble-server.service
 
 [Service]
 ExecStart=/opt/mumble-watcher/.venv/bin/python /opt/mumble-watcher/main.py

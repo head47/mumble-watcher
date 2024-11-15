@@ -13,7 +13,7 @@ from callbacks import MetaCallback, ServerCallback
 from common import CONFIG_FILE
 from message_sender import MessageSender
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, style="{", format="[{asctime}] {levelname} {message}")
 
 stopping = False
 

@@ -1,3 +1,4 @@
+import logging
 import threading
 
 import nio
@@ -19,6 +20,7 @@ class MessageSender:
     def send_message(self, message, html_message):
         with self.messages_lock:
             self.messages.append((message, html_message))
+            logging.info(f"Added '{message}' to queue")
 
     async def check_for_messages(self):
         with self.messages_lock:
@@ -37,3 +39,4 @@ class MessageSender:
                 "body": message,
             },
         )
+        logging.info(f"Sent '{message}'")

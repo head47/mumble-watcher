@@ -66,6 +66,8 @@ async def main():
         )
         meta.addCallback(meta_callback)
 
+        logging.info("Listening for events")
+
         while True:
             if stopping:
                 await matrix_client.close()

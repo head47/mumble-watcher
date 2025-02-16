@@ -5,16 +5,15 @@ from message_sender import MessageSender
 
 
 class ServerCallback(MumbleServer.ServerCallback):
-    ctx: dict
     server: MumbleServer.ServerPrx
     sender: MessageSender
     session_channel_map: dict[int, int]
 
-    def __init__(self, ctx, server, sender):
-        self.ctx = ctx
+    def __init__(self, server, sender):
         self.server = server
         self.sender = sender
         self.session_channel_map = {}
+        self.channel_states = self.server.getChannels()
 
     def userConnected(self, user, current=None):
         channel = self.server.getChannelState(user.channel)
@@ -49,11 +48,18 @@ class ServerCallback(MumbleServer.ServerCallback):
 
     def userTextMessage(self, user, message, current=None): ...
 
-    def channelCreated(self, channel, current=None): ...
+    def channelCreated(self, channel, current=None):
+        self.channel_states = self.server.getChannels()
 
-    def channelRemoved(self, channel, current=None): ...
+    def channelRemoved(self, channel, current=None):
+        self.channel_states = self.server.getChannels()
 
-    def channelStateChanged(self, channel, current=None): ...
+    def channelStateChanged(self, channel, current=None):
+        if channel.description not in (self.channel_states[channel.id].description,""):
+            message = f"Статус канала 🔈{channel.name}: {channel.description}"
+            formatted_message = f"Статус канала 🔈{channel.name}: <b>{channel.description}</b>"
+            self.sender.send_message(message, formatted_message)
+        self.channel_states = self.server.getChannels()
 
 
 class MetaCallback(MumbleServer.MetaCallback):

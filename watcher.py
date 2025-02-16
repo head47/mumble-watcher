@@ -54,7 +54,7 @@ async def main():
         room_id = cfg["matrix"]["room_id"]
         sender = MessageSender(matrix_client, room_id)
 
-        server_callback = ServerCallback(ctx, server, sender)
+        server_callback = ServerCallback(server, sender)
         server_callback_prx = MumbleServer.ServerCallbackPrx.checkedCast(adapter.addWithUUID(server_callback))
         users = server.getUsers()
         for _, u in users.items():
